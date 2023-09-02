@@ -8,18 +8,17 @@ import dev.koro.newstesting.entity.Author
 import dev.koro.newstesting.entity.Category
 import dev.koro.newstesting.entity.Comment
 import dev.koro.newstesting.entity.Gallery
-import dev.koro.newstesting.entity.JsonResponse
 import dev.koro.newstesting.entity.Like
 import dev.koro.newstesting.entity.NewsResponse
 import dev.koro.newstesting.entity.Person
 import dev.koro.newstesting.entity.View
 import org.json.JSONObject
 
-fun SendRequest(ctx: Context, state: MutableState<JsonResponse>) {
+
+fun sendRequest(ctx: Context, state: MutableState<ArrayList<NewsResponse>>) {
 	val queue = Volley.newRequestQueue(ctx)
 	val url = "https://cfc.mos.ru/mobileproxy/v6/news"
-
-	val newsArray = mutableListOf<NewsResponse>()
+	val news: ArrayList<NewsResponse> = ArrayList()
 
 	val stringRequest: StringRequest = object: StringRequest(Method.GET, url,
 		{ response ->
@@ -50,8 +49,8 @@ fun SendRequest(ctx: Context, state: MutableState<JsonResponse>) {
 
 				val galleryArrJson = newsPiece.getJSONArray("gallery")
 				val galleryArray = mutableListOf<Gallery>()
-				for (i in 0 until galleryArrJson.length()) {
-					val galleryPiece = galleryArrJson.getJSONObject(i)
+				for (j in 0 until galleryArrJson.length()) {
+					val galleryPiece = galleryArrJson.getJSONObject(j)
 
 					val gallery = Gallery(
 						galleryPiece.getString("url"),
@@ -68,8 +67,8 @@ fun SendRequest(ctx: Context, state: MutableState<JsonResponse>) {
 
 				val personsArrJson = newsPiece.getJSONArray("persons")
 				val personsArray = mutableListOf<Person>()
-				for (i in 0 until personsArrJson.length()) {
-					val person = personsArrJson.getJSONObject(i)
+				for (j in 0 until personsArrJson.length()) {
+					val person = personsArrJson.getJSONObject(j)
 
 					val pers = Person(
 						person.getString("imageURL"),
@@ -86,23 +85,23 @@ fun SendRequest(ctx: Context, state: MutableState<JsonResponse>) {
 				val date = newsPiece.getString("date")
 				val id = newsPiece.getString("id")
 
-				newsArray.add(NewsResponse(
+				news.add(NewsResponse(
 					comment, likes, author, category, galleryArray, view, personsArray, type, text, title, date, id
 				))
 			}
-			state.value.data = newsArray
+			state.value = news
 		},
 		{
-//				error ->
+
 		}
 	) {
-			override fun getHeaders(): Map<String, String> {
-				val params: MutableMap<String, String> = HashMap()
-				params["X-CFC-Authorization"] = "93f8590e-a788-4297-93da-c26b27e76e3a"
-				params["X-CFC-UserAgent"] = "DeviceID=16261594-C698-4BA5-B115-0E9AB31AA147;DeviceType=iOS;OsVersion=16.0;AppVersion=4.4 (1114)"
-				return params
-			}
+		override fun getHeaders(): Map<String, String> {
+			val params: MutableMap<String, String> = HashMap()
+			params["X-CFC-Authorization"] = "93f8590e-a788-4297-93da-c26b27e76e3a"
+			params["X-CFC-UserAgent"] = "DeviceID=16261594-C698-4BA5-B115-0E9AB31AA147;DeviceType=iOS;OsVersion=16.0;AppVersion=4.4 (1114)"
+			return params
 		}
+	}
 
 	queue.add(stringRequest)
 }
