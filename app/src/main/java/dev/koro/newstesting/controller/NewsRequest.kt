@@ -14,11 +14,15 @@ import dev.koro.newstesting.entity.Person
 import dev.koro.newstesting.entity.View
 import org.json.JSONObject
 
-
-fun sendRequest(ctx: Context, state: MutableState<ArrayList<NewsResponse>>) {
+fun sendRequest(ctx: Context, state: MutableState<ArrayList<NewsResponse>>, limit: String) {
 	val queue = Volley.newRequestQueue(ctx)
-	val url = "https://cfc.mos.ru/mobileproxy/v6/news"
 	val news: ArrayList<NewsResponse> = ArrayList()
+
+	val url: String = if (limit == "") {
+		"https://cfc.mos.ru/mobileproxy/v6/news"
+	} else {
+		"https://cfc.mos.ru/mobileproxy/v6/news?limit=$limit"
+	}
 
 	val stringRequest: StringRequest = object: StringRequest(Method.GET, url,
 		{ response ->
@@ -92,7 +96,6 @@ fun sendRequest(ctx: Context, state: MutableState<ArrayList<NewsResponse>>) {
 			state.value = news
 		},
 		{
-
 		}
 	) {
 		override fun getHeaders(): Map<String, String> {

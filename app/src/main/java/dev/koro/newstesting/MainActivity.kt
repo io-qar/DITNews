@@ -5,23 +5,23 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import dev.koro.newstesting.controller.sendRequest
+import androidx.compose.ui.text.input.KeyboardType
 import dev.koro.newstesting.entity.Author
 import dev.koro.newstesting.entity.Category
 import dev.koro.newstesting.entity.Comment
@@ -31,7 +31,8 @@ import dev.koro.newstesting.entity.NewsResponse
 import dev.koro.newstesting.entity.Person
 import dev.koro.newstesting.entity.View
 import dev.koro.newstesting.ui.theme.NewsTestingTheme
-import dev.koro.newstesting.view.CardView
+import dev.koro.newstesting.view.News
+import dev.koro.newstesting.view.SendRequestButton
 
 class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,10 +47,11 @@ class MainActivity : ComponentActivity() {
 	}
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun Main(ctx: Context) {
-	val state = remember {
+	val stateNews = remember {
 		mutableStateOf(arrayListOf(NewsResponse(
 			Comment(false, 0),
 			Like(false, 0, false, false),
@@ -61,18 +63,19 @@ fun Main(ctx: Context) {
 			"", ""
 		)))
 	}
+	var statePageLim by remember { mutableStateOf("") }
 
-	sendRequest(ctx, state)
+	Column {
+		OutlinedTextField(statePageLim, {statePageLim = it},
+			label = {Text("Limit of pages")},
+			keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+			singleLine = true
+		)
 
-	LazyColumn(Modifier.padding(10.dp, 5.dp, 10.dp, 10.dp)) {
-		items(state.value) { news ->
-			Card(
-				shape = RoundedCornerShape(10.dp),
-				elevation = CardDefaults.cardElevation(10.dp)
-			) {
-				CardView(news)
-			}
-			Spacer(Modifier.height(20.dp))
-		}
+		News(stateNews)
+	}
+
+	Column(verticalArrangement = Arrangement.Bottom, horizontalAlignment = Alignment.End) {
+		SendRequestButton(ctx, stateNews, statePageLim)
 	}
 }
